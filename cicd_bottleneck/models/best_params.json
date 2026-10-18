@@ -1,0 +1,38 @@
+{
+  "best_model": "svm_rbf",
+  "best_model_display": "SVM (RBF)",
+  "selection_metric": "held-out test F1",
+  "test_f1": {
+    "logistic_regression": 0.7362637362637363,
+    "svm_rbf": 0.7414500683994528,
+    "gradient_boosting": 0.7049689440993789,
+    "random_forest": 0.7374301675977654
+  },
+  "cv_f1": {
+    "logistic_regression": 0.7116640882163037,
+    "svm_rbf": 0.7109013406035393,
+    "gradient_boosting": 0.7007794504003286,
+    "random_forest": 0.7254818152494537
+  },
+  "params": {
+    "logistic_regression": {
+      "C": 10.0
+    },
+    "svm_rbf": {
+      "C": 10.0,
+      "gamma": "scale"
+    },
+    "gradient_boosting": {
+      "learning_rate": 0.06,
+      "max_depth": 3,
+      "n_estimators": 160
+    },
+    "random_forest": {
+      "max_depth": 8,
+      "min_samples_leaf": 5,
+      "n_estimators": 280
+    }
+  },
+  "seed": 42,
+  "caveat": "The winning model was chosen on the same test split used for the headline F1, so that single number is mildly optimistic. Multi-seed means in metrics.json are the uncertainty check."
+}

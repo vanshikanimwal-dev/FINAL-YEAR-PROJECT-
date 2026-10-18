@@ -1,0 +1,4 @@
+setting,model,n_features,features,f1,delta_f1_vs_all
+all_features,svm_rbf,8,"commit_frequency,code_churn,pr_review_latency_hours,build_success_ratio,test_execution_duration_sec,deployment_delay_min,historical_build_success_ratio,build_duration_sec",0.7414500683994528,0.0
+no_timing,svm_rbf,6,"commit_frequency,code_churn,pr_review_latency_hours,build_success_ratio,deployment_delay_min,historical_build_success_ratio",0.7327001356852103,-0.008749932714242514
+behavior_only,svm_rbf,5,"commit_frequency,code_churn,pr_review_latency_hours,build_success_ratio,historical_build_success_ratio",0.7052489905787349,-0.03620107782071791

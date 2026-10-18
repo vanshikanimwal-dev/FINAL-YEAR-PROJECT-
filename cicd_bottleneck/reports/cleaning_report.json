@@ -1,0 +1,23 @@
+{
+  "raw_rows": 4896,
+  "rows_removed_as_duplicates": 96,
+  "rows_after_dedup": 4800,
+  "cells_imputed": 1684,
+  "imputation": "per-column median fit on the training split only",
+  "scaling": "MinMaxScaler fit on the training split only; runs_clean.csv stays in original units",
+  "timestamps": "normalised to UTC",
+  "medians": {
+    "commit_frequency": 6.0,
+    "code_churn": 266.83500000000004,
+    "pr_review_latency_hours": 14.433,
+    "build_success_ratio": 0.6,
+    "test_execution_duration_sec": 362.504,
+    "deployment_delay_min": 9.263,
+    "historical_build_success_ratio": 0.6832,
+    "build_duration_sec": 178.413,
+    "build_compilation": 178.419,
+    "unit_testing": 170.976,
+    "integration_testing": 169.86849999999998,
+    "deployment": 432.741
+  }
+}

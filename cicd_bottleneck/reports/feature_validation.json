@@ -1,0 +1,52 @@
+{
+  "correlation_flag": 0.8,
+  "high_correlation_pairs": [],
+  "rfe_base_estimator": "RandomForestClassifier",
+  "rfe_n_features_to_select": 5,
+  "rfe_scope": "seven core features; build_duration_sec is kept for the timing ablation and is not dropped here",
+  "rfe_ranking": [
+    {
+      "feature": "code_churn",
+      "rank": 1,
+      "selected": true
+    },
+    {
+      "feature": "pr_review_latency_hours",
+      "rank": 1,
+      "selected": true
+    },
+    {
+      "feature": "build_success_ratio",
+      "rank": 1,
+      "selected": true
+    },
+    {
+      "feature": "deployment_delay_min",
+      "rank": 1,
+      "selected": true
+    },
+    {
+      "feature": "historical_build_success_ratio",
+      "rank": 1,
+      "selected": true
+    },
+    {
+      "feature": "test_execution_duration_sec",
+      "rank": 2,
+      "selected": false
+    },
+    {
+      "feature": "commit_frequency",
+      "rank": 3,
+      "selected": false
+    }
+  ],
+  "features_kept": [
+    "code_churn",
+    "pr_review_latency_hours",
+    "build_success_ratio",
+    "deployment_delay_min",
+    "historical_build_success_ratio"
+  ],
+  "note": "RFE is diagnostic. Classifiers train on the full eight-feature set so the leakage ablation stays interpretable."
+}

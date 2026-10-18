@@ -1,0 +1,25 @@
+{
+  "n_unique_runs": 4800,
+  "n_raw_rows": 4896,
+  "n_projects": 12,
+  "bottleneck_rate": 0.35020833333333334,
+  "noise_scale": 1.0404296875,
+  "signal_to_noise": 2.2,
+  "diagnostic_behavior_f1": 0.6837831549872257,
+  "distributions": {
+    "commit_frequency": "Poisson",
+    "code_churn": "log-normal",
+    "pr_review_latency_hours": "log-normal",
+    "build_success_ratio": "Binomial(10, p) / 10",
+    "deployment_delay_min": "gamma",
+    "historical_build_success_ratio": "beta latent + gaussian noise",
+    "stage_durations": "log-normal multipliers; deployment carries the behavior score"
+  },
+  "label_rule": "bottleneck = 1 if total_execution_time_sec > 1.5 * project median",
+  "assumptions": [
+    "Latent developer discipline is not stored; it only shapes the observed features.",
+    "The label uses each project's full-sample median, so it is retrospective.",
+    "Timing features are this run's compile time and unit+integration time.",
+    "The behavior interaction is loaded mainly onto the deployment stage so timing features are not a sufficient statistic for the label."
+  ]
+}

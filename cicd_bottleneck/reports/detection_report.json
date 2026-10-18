@@ -1,0 +1,82 @@
+{
+  "tau": 0.65,
+  "z_threshold": 2.0,
+  "persistence_runs": 3,
+  "window": 20,
+  "evaluation_scope": "held-out test runs; rolling history uses each project's full timeline",
+  "n_alerts_all_runs": 10,
+  "n_alerts_test": 0,
+  "false_alarm_rate": null,
+  "detection_rate": 0.0,
+  "mean_lead_time_hours": null,
+  "false_alarm_target": 0.08,
+  "target_met": false,
+  "alerts_by_stage": {
+    "deployment": 6,
+    "build_compilation": 3,
+    "integration_testing": 1
+  },
+  "alerts_by_severity": {
+    "high": 8,
+    "low": 1,
+    "medium": 1
+  },
+  "tau_sweep": [
+    {
+      "tau": 0.5,
+      "n_alerts": 1,
+      "false_alarm_rate": 0.0,
+      "detection_rate": 0.002976190476190476
+    },
+    {
+      "tau": 0.55,
+      "n_alerts": 0,
+      "false_alarm_rate": null,
+      "detection_rate": 0.0
+    },
+    {
+      "tau": 0.6,
+      "n_alerts": 0,
+      "false_alarm_rate": null,
+      "detection_rate": 0.0
+    },
+    {
+      "tau": 0.65,
+      "n_alerts": 0,
+      "false_alarm_rate": null,
+      "detection_rate": 0.0
+    },
+    {
+      "tau": 0.7,
+      "n_alerts": 0,
+      "false_alarm_rate": null,
+      "detection_rate": 0.0
+    },
+    {
+      "tau": 0.75,
+      "n_alerts": 0,
+      "false_alarm_rate": null,
+      "detection_rate": 0.0
+    },
+    {
+      "tau": 0.8,
+      "n_alerts": 0,
+      "false_alarm_rate": null,
+      "detection_rate": 0.0
+    },
+    {
+      "tau": 0.85,
+      "n_alerts": 0,
+      "false_alarm_rate": null,
+      "detection_rate": 0.0
+    },
+    {
+      "tau": 0.9,
+      "n_alerts": 0,
+      "false_alarm_rate": null,
+      "detection_rate": 0.0
+    }
+  ],
+  "lead_time_definition": "Mean hours, over true-positive test alerts, from the earliest preceding run whose bottleneck probability already exceeded tau to the alerted run. Zero means probability first crossed tau on the alerted run.",
+  "false_alarm_definition": "Share of confirmed alerts on held-out runs whose true label is normal, divided by all confirmed alerts on held-out runs."
+}

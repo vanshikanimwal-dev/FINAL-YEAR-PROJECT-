@@ -1,0 +1,10 @@
+[
+  "commit_frequency",
+  "code_churn",
+  "pr_review_latency_hours",
+  "build_success_ratio",
+  "test_execution_duration_sec",
+  "deployment_delay_min",
+  "historical_build_success_ratio",
+  "build_duration_sec"
+]
