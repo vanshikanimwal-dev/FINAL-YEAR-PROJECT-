@@ -11,7 +11,7 @@ from config import FEATURE_LABELS
 _LAYERS = [
     ("1 · Collect", "Jenkins, GitHub Actions, GitLab CI, Git, webhooks. Each row is one pipeline run."),
     ("2 · Process", "Log parse, UTC clocks, webhook dedupe, train-only median imputation, train-only min-max scaling."),
-    ("3 · Model", "Logistic regression, RBF SVM, gradient boosting, random forest. Tuned on training F1."),
+    ("3 · Model", "Logistic regression, RBF SVM, gradient boosting, and random forest, plus a hybrid stack of all four. The saved model is the best held-out F1."),
     ("4 · Detect", "Alert only if probability > 0.65 and a stage stays 2σ hot for 3 runs."),
     ("5 · Decide", "This dashboard. Filters, developer coaching, and a live what-if on the saved model."),
 ]

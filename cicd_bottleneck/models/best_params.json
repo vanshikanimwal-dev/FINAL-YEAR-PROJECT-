@@ -1,18 +1,23 @@
 {
   "best_model": "svm_rbf",
   "best_model_display": "SVM (RBF)",
+  "deployed_model": "svm_rbf",
+  "deployed_model_display": "SVM (RBF)",
+  "deployed_f1": 0.7414500683994528,
   "selection_metric": "held-out test F1",
   "test_f1": {
     "logistic_regression": 0.7362637362637363,
     "svm_rbf": 0.7414500683994528,
     "gradient_boosting": 0.7049689440993789,
-    "random_forest": 0.7374301675977654
+    "random_forest": 0.7374301675977654,
+    "hybrid_stack": 0.7309782608695652
   },
   "cv_f1": {
     "logistic_regression": 0.7116640882163037,
     "svm_rbf": 0.7109013406035393,
     "gradient_boosting": 0.7007794504003286,
-    "random_forest": 0.7254818152494537
+    "random_forest": 0.7254818152494537,
+    "hybrid_stack": null
   },
   "params": {
     "logistic_regression": {
@@ -31,8 +36,44 @@
       "max_depth": 8,
       "min_samples_leaf": 5,
       "n_estimators": 280
+    },
+    "hybrid_stack": {
+      "meta": "logistic_regression",
+      "bases": [
+        "logistic_regression",
+        "svm_rbf",
+        "gradient_boosting",
+        "random_forest"
+      ],
+      "base_params": {
+        "logistic_regression": {
+          "C": 10.0
+        },
+        "svm_rbf": {
+          "C": 10.0,
+          "gamma": "scale"
+        },
+        "gradient_boosting": {
+          "learning_rate": 0.06,
+          "max_depth": 3,
+          "n_estimators": 160
+        },
+        "random_forest": {
+          "max_depth": 8,
+          "min_samples_leaf": 5,
+          "n_estimators": 280
+        }
+      },
+      "meta_coef": {
+        "logistic_regression": 0.4618353289891354,
+        "svm_rbf": 7.396321880534604e-05,
+        "gradient_boosting": 0.16575624426785973,
+        "random_forest": 1.2309683726723704
+      },
+      "meta_intercept": -0.3265004687108023,
+      "score_note": "Each column is an out-of-fold class-1 probability from the training split. Those four columns are standardized before the blender."
     }
   },
   "seed": 42,
-  "caveat": "The winning model was chosen on the same test split used for the headline F1, so that single number is mildly optimistic. Multi-seed means in metrics.json are the uncertainty check."
+  "caveat": "The ranking uses the same test split as the headline F1, so that single number is mildly optimistic. The saved predictor is that leader. The hybrid blender is fit only on out-of-fold training scores. Multi-seed means in metrics.json are the uncertainty check."
 }

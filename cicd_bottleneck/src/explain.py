@@ -31,7 +31,7 @@ from config import (
     get_logger,
 )
 from src.features import load_split
-from src.train import build_estimator
+from src.train import HYBRID_NAME, build_estimator, fit_hybrid
 
 logger = get_logger("explain")
 
@@ -81,6 +81,16 @@ def _refit(name: str, params: dict[str, Any], x_train: np.ndarray, y_train: np.n
     return model
 
 
+def _refit_deployed(best_meta: dict[str, Any], x_train: np.ndarray, y_train: np.ndarray) -> Any:
+    """Refit the model that actually scores runs, including the hybrid blender."""
+    deployed = best_meta.get("deployed_model", best_meta["best_model"])
+    if deployed != HYBRID_NAME:
+        return _refit(deployed, best_meta["params"][deployed], x_train, y_train)
+    base_params = best_meta["params"][HYBRID_NAME]["base_params"]
+    bases = {name: _refit(name, params, x_train, y_train) for name, params in base_params.items()}
+    return fit_hybrid(bases, x_train, y_train, SEED, base_params)
+
+
 def explain() -> pd.DataFrame:
     frame = pd.read_csv(CLEAN_RUNS)
     split = load_split()
@@ -93,7 +103,7 @@ def explain() -> pd.DataFrame:
     x_test = scaler.transform(frame.iloc[test_idx][MODEL_FEATURES])
     forest = joblib.load(MODELS / "random_forest.joblib")
     best_meta = json.loads(BEST_PARAMS_PATH.read_text(encoding="utf-8"))
-    best_name = best_meta["best_model"]
+    best_name = best_meta.get("deployed_model", best_meta["best_model"])
     best_model = joblib.load(MODELS / "best_model.joblib")
 
     mdi = _percent(np.asarray(forest.feature_importances_, dtype=float))
@@ -144,12 +154,11 @@ def explain() -> pd.DataFrame:
     }
     ablation_rows = []
     full_f1 = None
-    params = best_meta["params"][best_name]
     for setting, columns in subsets.items():
         subset_scaler = MinMaxScaler()
         x_sub_train = subset_scaler.fit_transform(frame.iloc[train_idx][columns])
         x_sub_test = subset_scaler.transform(frame.iloc[test_idx][columns])
-        model = _refit(best_name, params, x_sub_train, y_train)
+        model = _refit_deployed(best_meta, x_sub_train, y_train)
         f1 = float(f1_score(y_test, model.predict(x_sub_test)))
         if setting == "all_features":
             full_f1 = f1
@@ -192,7 +201,7 @@ def explain() -> pd.DataFrame:
     ax.set_ylim(0, 1)
     ax.set_ylabel("Test F1")
     ax.set_xlabel("")
-    ax.set_title(f"Leakage ablation ({best_meta['best_model_display']})")
+    ax.set_title(f"Leakage ablation ({best_meta.get('deployed_model_display', best_meta['best_model_display'])})")
     fig.tight_layout()
     _save(fig, "ablation.png")
     return table

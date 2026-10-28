@@ -39,7 +39,7 @@ from config import (
     get_logger,
 )
 from src.features import make_split
-from src.train import build_estimator, tune_model
+from src.train import HYBRID_NAME, fit_hybrid, tune_model
 
 logger = get_logger("evaluate")
 
@@ -96,32 +96,46 @@ def _matrices_for_seed(frame: pd.DataFrame, seed: int) -> tuple[np.ndarray, np.n
     return x_train, y_train, x_test, y_test
 
 
+def _score_model(model: Any, x_test: np.ndarray, y_test: np.ndarray) -> dict[str, Any]:
+    prob = model.predict_proba(x_test)[:, 1]
+    pred = model.predict(x_test)
+    return score_predictions(y_test, pred, prob)
+
+
 def _repeat_seeds(frame: pd.DataFrame) -> dict[str, dict[str, float]]:
     """Full grid search on every seed except 42, which is scored from disk."""
+    from config import PARAM_GRIDS
+
     per_seed: dict[str, list[dict[str, float]]] = {name: [] for name in MODEL_DISPLAY}
     for seed in MULTI_SEEDS:
         logger.info("Multi-seed experiment, seed %d", seed)
-        x_train, y_train, x_test, y_test = _matrices_for_seed(frame, seed)
-        for name in MODEL_DISPLAY:
-            if seed == SEED:
-                model = joblib.load(MODELS / f"{name}.joblib")
-                # Seed 42's saved model was scaled with the canonical scaler and
-                # the canonical split. Score that exact test fold, not a refit.
-                from src.train import load_matrices
+        if seed == SEED:
+            from src.train import load_matrices
 
-                _frame, scaled, y, _train_idx, test_idx, _scaler = load_matrices(SEED)
-                y_test_ref = y[test_idx]
-                x_test_ref = scaled[test_idx]
-                prob = model.predict_proba(x_test_ref)[:, 1]
-                pred = model.predict(x_test_ref)
-                metrics = score_predictions(y_test_ref, pred, prob)
-            else:
-                model, _params, _cv = tune_model(name, x_train, y_train, seed)
-                prob = model.predict_proba(x_test)[:, 1]
-                pred = model.predict(x_test)
-                metrics = score_predictions(y_test, pred, prob)
+            _frame, scaled, y, _train_idx, test_idx, _scaler = load_matrices(SEED)
+            x_test_ref = scaled[test_idx]
+            y_test_ref = y[test_idx]
+            for name in MODEL_DISPLAY:
+                model = joblib.load(MODELS / f"{name}.joblib")
+                metrics = _score_model(model, x_test_ref, y_test_ref)
+                per_seed[name].append({metric: float(metrics[metric]) for metric in METRIC_NAMES})
+                logger.info("seed %d %s F1 %.4f", seed, name, metrics["f1"])
+            continue
+
+        x_train, y_train, x_test, y_test = _matrices_for_seed(frame, seed)
+        fitted: dict[str, Any] = {}
+        params: dict[str, Any] = {}
+        for name in PARAM_GRIDS:
+            model, best_params, _cv = tune_model(name, x_train, y_train, seed)
+            fitted[name] = model
+            params[name] = best_params
+            metrics = _score_model(model, x_test, y_test)
             per_seed[name].append({metric: float(metrics[metric]) for metric in METRIC_NAMES})
             logger.info("seed %d %s F1 %.4f", seed, name, metrics["f1"])
+        hybrid = fit_hybrid(fitted, x_train, y_train, seed, params)
+        metrics = _score_model(hybrid, x_test, y_test)
+        per_seed[HYBRID_NAME].append({metric: float(metrics[metric]) for metric in METRIC_NAMES})
+        logger.info("seed %d %s F1 %.4f", seed, HYBRID_NAME, metrics["f1"])
 
     summary: dict[str, dict[str, float]] = {}
     for name, rows in per_seed.items():
@@ -139,12 +153,13 @@ def _plot_comparison(models: dict[str, dict[str, Any]]) -> None:
     metrics = ["accuracy", "precision", "recall", "f1"]
     names = list(MODEL_DISPLAY)
     x = np.arange(len(metrics))
-    width = 0.18
-    fig, ax = plt.subplots(figsize=(10, 5.2))
-    colors = ["#0F766E", "#4F46E5", "#D97706", "#DC2626"]
+    width = 0.15
+    fig, ax = plt.subplots(figsize=(11, 5.2))
+    colors = ["#0F766E", "#4F46E5", "#D97706", "#DC2626", "#0891B2"]
+    center = (len(names) - 1) / 2
     for i, name in enumerate(names):
         vals = [models[name][metric] * 100 for metric in metrics]
-        ax.bar(x + (i - 1.5) * width, vals, width, label=MODEL_DISPLAY[name], color=colors[i])
+        ax.bar(x + (i - center) * width, vals, width, label=MODEL_DISPLAY[name], color=colors[i])
     ax.set_xticks(x)
     ax.set_xticklabels(["Accuracy", "Precision", "Recall", "F1"])
     ax.set_ylabel("Score (%)")
@@ -185,8 +200,12 @@ def _plot_pr(models: dict[str, dict[str, Any]]) -> None:
 
 
 def _plot_confusion(models: dict[str, dict[str, Any]]) -> None:
-    fig, axes = plt.subplots(2, 2, figsize=(8.5, 7.5))
-    for ax, name in zip(axes.ravel(), MODEL_DISPLAY):
+    names = list(MODEL_DISPLAY)
+    columns = 3
+    rows = int(np.ceil(len(names) / columns))
+    fig, axes = plt.subplots(rows, columns, figsize=(4.2 * columns, 3.5 * rows))
+    flat = np.atleast_1d(axes).ravel()
+    for ax, name in zip(flat, names):
         matrix = np.array(models[name]["confusion_matrix"])
         sns.heatmap(matrix, annot=True, fmt="d", cmap="Blues", cbar=False, ax=ax)
         ax.set_xlabel("Predicted")
@@ -194,6 +213,8 @@ def _plot_confusion(models: dict[str, dict[str, Any]]) -> None:
         ax.set_title(MODEL_DISPLAY[name])
         ax.set_xticklabels(["Normal", "Bottleneck"])
         ax.set_yticklabels(["Normal", "Bottleneck"], rotation=0)
+    for ax in flat[len(names):]:
+        ax.axis("off")
     fig.suptitle("Confusion matrices (test set)")
     fig.tight_layout()
     _save(fig, "confusion_matrices.png")
@@ -218,7 +239,7 @@ def _plot_calibration(models: dict[str, dict[str, Any]]) -> None:
 
 
 def _plot_paper(models: dict[str, dict[str, Any]]) -> None:
-    names = list(MODEL_DISPLAY)
+    names = [name for name in MODEL_DISPLAY if name in PAPER_METRICS_PCT]
     ours = [models[name]["f1"] * 100 for name in names]
     paper = [PAPER_METRICS_PCT[name]["f1"] for name in names]
     x = np.arange(len(names))
@@ -262,6 +283,9 @@ def evaluate() -> dict[str, Any]:
     multi = _repeat_seeds(frame)
     best_name = max(detailed, key=lambda name: detailed[name]["f1"])
     best_params = json.loads((MODELS / "best_params.json").read_text(encoding="utf-8")) if (MODELS / "best_params.json").exists() else {}
+    deployed_name = best_params.get("deployed_model", best_name)
+    if deployed_name not in detailed:
+        deployed_name = best_name
 
     sns.set_theme(style="whitegrid", font="DejaVu Sans")
     _plot_comparison(detailed)
@@ -278,8 +302,9 @@ def evaluate() -> dict[str, Any]:
             row[metric] = detailed[name][metric]
             row[f"{metric}_mean"] = multi[name][f"{metric}_mean"]
             row[f"{metric}_std"] = multi[name][f"{metric}_std"]
-        for metric, value in PAPER_METRICS_PCT[name].items():
-            row[f"paper_{metric}"] = value
+        if name in PAPER_METRICS_PCT:
+            for metric, value in PAPER_METRICS_PCT[name].items():
+                row[f"paper_{metric}"] = value
         rows.append(row)
     pd.DataFrame(rows).to_csv(MODEL_COMPARISON_PATH, index=False)
 
@@ -292,13 +317,17 @@ def evaluate() -> dict[str, Any]:
         "best_model": best_name,
         "best_model_display": MODEL_DISPLAY[best_name],
         "best_f1": detailed[best_name]["f1"],
+        "deployed_model": deployed_name,
+        "deployed_model_display": MODEL_DISPLAY[deployed_name],
+        "deployed_f1": detailed[deployed_name]["f1"],
         "models": detailed,
         "multi_seed": multi,
         "paper_percent": PAPER_METRICS_PCT,
         "tuning": best_params,
         "notes": [
             "Primary ranking metric is positive-class F1.",
-            "Seed 42 metrics describe the saved models. The other four seeds repeat the full grid search on their own stratified splits and scalers.",
+            "The deployed predictor is a stack: logistic regression blends out-of-fold scores from logistic regression, RBF SVM, gradient boosting, and random forest.",
+            "Seed 42 metrics describe the saved models. The other four seeds repeat the full grid search and the stack on their own stratified splits and scalers.",
             "Paper percentages are a reference, not a target. Differences are expected because the data are simulated.",
         ],
     }

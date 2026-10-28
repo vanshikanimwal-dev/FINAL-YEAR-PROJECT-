@@ -45,8 +45,8 @@ def render(filters: dict) -> None:
         return
     alert_frame = apply_filters(alerts(), filters)
     alert_count = 0 if alert_frame is None else len(alert_frame)
-    f1 = metric["best_f1"] * 100 if metric else 0
-    model_name = metric["best_model_display"] if metric else "Model pending"
+    f1 = (metric.get("deployed_f1", metric["best_f1"]) if metric else 0) * 100
+    model_name = metric.get("deployed_model_display", metric["best_model_display"]) if metric else "Model pending"
     medians = project_medians(frame)
     hours = hours_at_risk(view, medians)
     rate = float(view["true_label"].mean())

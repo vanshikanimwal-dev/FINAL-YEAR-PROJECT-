@@ -1,0 +1,1 @@
+-r cicd_bottleneck/requirements.txt

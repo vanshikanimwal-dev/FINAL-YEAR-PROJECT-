@@ -47,7 +47,8 @@ def write_summary() -> str:
         f"- Bottleneck rate: {meta.get('bottleneck_rate', float('nan')):.1%}",
         f"- Calibrated noise scale: {meta.get('noise_scale', float('nan')):.4f} at SNR {meta.get('signal_to_noise', 'n/a')}",
         f"- Diagnostic behavior-only F1 (3-fold, pre-tuning): {meta.get('diagnostic_behavior_f1', float('nan')):.3f}",
-        f"- Best saved model: {metrics['best_model_display']} (seed-42 test F1 {metrics['best_f1'] * 100:.1f}%)",
+        f"- Best held-out F1: {metrics['best_model_display']} ({metrics['best_f1'] * 100:.1f}%)",
+        f"- Deployed model: {metrics.get('deployed_model_display', metrics['best_model_display'])} (seed-42 test F1 {metrics.get('deployed_f1', metrics['best_f1']) * 100:.1f}%)",
         "",
         "## Model comparison",
         "",
@@ -55,8 +56,9 @@ def write_summary() -> str:
         "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
     ]
     for _, row in comparison.iterrows():
+        paper = "—" if pd.isna(row["paper_f1"]) else f"{row['paper_f1']:.1f}%"
         lines.append(
-            "| {name} | {acc:.1f}% | {prec:.1f}% | {rec:.1f}% | {f1:.1f}% | {auc:.3f} | {f1pm} | {paper:.1f}% |".format(
+            "| {name} | {acc:.1f}% | {prec:.1f}% | {rec:.1f}% | {f1:.1f}% | {auc:.3f} | {f1pm} | {paper} |".format(
                 name=row["display_name"],
                 acc=row["accuracy"] * 100,
                 prec=row["precision"] * 100,
@@ -64,7 +66,7 @@ def write_summary() -> str:
                 f1=row["f1"] * 100,
                 auc=row["roc_auc"],
                 f1pm=_fmt_pm(row["f1_mean"], row["f1_std"]),
-                paper=row["paper_f1"],
+                paper=paper,
             )
         )
     lines.extend(["", "## Feature importance (Random Forest MDI)", ""])

@@ -5,7 +5,8 @@
 - Bottleneck rate: 35.0%
 - Calibrated noise scale: 1.0404 at SNR 2.2
 - Diagnostic behavior-only F1 (3-fold, pre-tuning): 0.684
-- Best saved model: SVM (RBF) (seed-42 test F1 74.1%)
+- Best held-out F1: SVM (RBF) (74.1%)
+- Deployed model: SVM (RBF) (seed-42 test F1 74.1%)
 
 ## Model comparison
 
@@ -15,6 +16,7 @@
 | SVM (RBF) | 80.3% | 68.6% | 80.7% | 74.1% | 0.880 | 71.2% ± 2.3 | 83.1% |
 | Gradient Boosting | 80.2% | 73.7% | 67.6% | 70.5% | 0.883 | 69.2% ± 2.5 | 91.7% |
 | Random Forest | 80.4% | 69.5% | 78.6% | 73.7% | 0.881 | 71.4% ± 1.9 | 93.2% |
+| Hybrid stack | 79.4% | 67.2% | 80.1% | 73.1% | 0.887 | 72.3% ± 1.3 | — |
 
 ## Feature importance (Random Forest MDI)
 

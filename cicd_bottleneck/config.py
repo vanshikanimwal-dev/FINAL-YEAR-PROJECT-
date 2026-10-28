@@ -147,6 +147,7 @@ MODEL_DISPLAY: dict[str, str] = {
     "svm_rbf": "SVM (RBF)",
     "gradient_boosting": "Gradient Boosting",
     "random_forest": "Random Forest",
+    "hybrid_stack": "Hybrid stack",
 }
 
 PARAM_GRIDS: dict[str, dict[str, list]] = {

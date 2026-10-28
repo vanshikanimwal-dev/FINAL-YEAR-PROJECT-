@@ -6,7 +6,7 @@ CI/CD teams usually notice a bottleneck after the log is already red. This proje
 
 1. **Data collection.** 4,800 simulated runs across 12 projects (8 single-team, 4 multi-team) on Jenkins, GitHub Actions, and GitLab CI.
 2. **Feature processing.** Log parsing, UTC timestamps, webhook deduplication, median imputation and min-max scaling fit on the training split only.
-3. **Models.** Logistic regression, RBF SVM, gradient boosting, and random forest, tuned with 5-fold stratified F1 search.
+3. **Models.** Logistic regression, RBF SVM, gradient boosting, and random forest, tuned with 5-fold stratified F1 search. A hybrid stack blends the four with a logistic regression fit only on out-of-fold training scores. The saved predictor is whichever model has the best held-out F1.
 4. **Detection.** A stage alert fires only when model probability exceeds 0.65 **and** the stage stays more than 2 standard deviations above its previous 20-run mean for at least 3 consecutive runs.
 5. **Analytics.** The PipelineIQ Streamlit dashboard.
 
@@ -54,8 +54,9 @@ Seed-42 held-out scores, and F1 across five seeds:
 | SVM (RBF) | 80.3% | 68.6% | 80.7% | 74.1% | 0.880 | 71.2% ± 2.3 | 83.1% |
 | Gradient Boosting | 80.2% | 73.7% | 67.6% | 70.5% | 0.883 | 69.2% ± 2.5 | 91.7% |
 | Random Forest | 80.4% | 69.5% | 78.6% | 73.7% | 0.881 | 71.4% ± 1.9 | 93.2% |
+| Hybrid stack | 79.4% | 67.2% | 80.1% | 73.1% | 0.887 | 72.3% ± 1.3 | — |
 
-Best saved model: **SVM (RBF), test F1 74.1%**.
+Best saved model: **SVM (RBF), test F1 74.1%**. The hybrid blends all four models. On this split it is 1.0 point behind the SVM. Across five seeds it has the highest average F1 and the smallest spread, and the highest ROC-AUC (0.887). The saved predictor stays the seed-42 F1 winner.
 
 These sit below the paper, especially for the tree models (paper RF F1 93.2%). That is expected. The simulator was not adjusted to chase those percentages. The label is a threshold on a noisy, interactive function of several features, so no model gets a near-perfect F1. ROC-AUC is about 0.88 for every model: ranking is easier than a hard 0.5 cutoff. Trees do not beat the linear model here, because much of the signal is still close to linear once the interaction is only one part of the score.
 

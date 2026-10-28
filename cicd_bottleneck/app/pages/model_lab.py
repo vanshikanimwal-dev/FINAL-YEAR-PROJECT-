@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import pandas as pd
 import streamlit as st
 
 from app import charts
@@ -30,7 +31,7 @@ def render(filters: dict) -> None:
                 f"{row.recall * 100:.1f}%",
                 f"{row.f1 * 100:.1f}%",
                 f"{row.f1_mean * 100:.1f}% ± {row.f1_std * 100:.1f}",
-                f"{row.paper_f1:.1f}%",
+                "—" if pd.isna(row.paper_f1) else f"{row.paper_f1:.1f}%",
             ]
             for row in table.itertuples(index=False)
         ],
@@ -42,7 +43,8 @@ def render(filters: dict) -> None:
     with pr:
         charts.show(charts.curve_chart(payload, "pr", "Precision-recall. F1 is the ranking metric because the classes are uneven."))
     with matrix:
-        choice = st.selectbox("Model", list(MODEL_DISPLAY), format_func=lambda key: MODEL_DISPLAY[key])
+        available = [key for key in MODEL_DISPLAY if key in payload["models"]]
+        choice = st.selectbox("Model", available, format_func=lambda key: MODEL_DISPLAY[key])
         charts.show(charts.confusion(payload, choice, f"Confusion matrix · {MODEL_DISPLAY[choice]}"))
     with calibration:
         charts.show(charts.curve_chart(payload, "calibration", "Reliability of predicted probabilities"))

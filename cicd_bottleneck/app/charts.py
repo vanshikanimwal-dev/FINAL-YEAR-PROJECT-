@@ -131,7 +131,10 @@ def grouped_metrics(comparison: pd.DataFrame, title: str) -> go.Figure:
     metrics = ["accuracy", "precision", "recall", "f1"]
     fig = go.Figure()
     for name, label in MODEL_DISPLAY.items():
-        row = comparison.loc[comparison["model"] == name].iloc[0]
+        match = comparison.loc[comparison["model"] == name]
+        if match.empty:
+            continue
+        row = match.iloc[0]
         fig.add_trace(go.Bar(name=label, x=[m.title() for m in metrics], y=[row[m] * 100 for m in metrics], hovertemplate="%{x} %{y:.1f}%<extra>" + label + "</extra>"))
     fig.update_layout(barmode="group")
     fig.update_yaxes(title="Score (%)", range=[0, 100])
@@ -141,6 +144,8 @@ def grouped_metrics(comparison: pd.DataFrame, title: str) -> go.Figure:
 def curve_chart(metrics: dict, kind: str, title: str) -> go.Figure:
     fig = go.Figure()
     for name, label in MODEL_DISPLAY.items():
+        if name not in metrics["models"]:
+            continue
         payload = metrics["models"][name]
         if kind == "roc":
             fig.add_trace(go.Scatter(x=payload["fpr"], y=payload["tpr"], name=f"{label} AUC {payload['roc_auc']:.3f}", mode="lines", hovertemplate="FPR %{x:.2f}<br>TPR %{y:.2f}<extra></extra>"))

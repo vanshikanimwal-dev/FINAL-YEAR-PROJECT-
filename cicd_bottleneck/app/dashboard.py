@@ -96,7 +96,9 @@ def _filters(frame) -> dict:
 
 def _hero(payload: dict | None) -> None:
     if payload:
-        chip = f"Model: {payload['best_model_display']} • F1 {payload['best_f1'] * 100:.1f}%"
+        name = payload.get("deployed_model_display", payload["best_model_display"])
+        f1 = payload.get("deployed_f1", payload["best_f1"])
+        chip = f"Model: {name} • F1 {f1 * 100:.1f}%"
     else:
         chip = "Model: waiting on reports/metrics.json"
     html(
