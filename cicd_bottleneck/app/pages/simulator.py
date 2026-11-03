@@ -135,8 +135,10 @@ def render(filters: dict) -> None:
             charts.show(charts.gauge(float(row.bottleneck_probability), f"{row.project_name} · {row.run_id[-4:]}", 200))
     medians = {feature: float(frame[feature].median()) for feature in features}
     html('<div class="section"><h2>What-if simulator</h2><p>Sliders are in original units. The saved scaler and model score every change.</p></div>')
-    for name in _PRESETS:
-        st.button(name, key=f"preset_{name}", on_click=_apply_preset, args=(frame, name, features))
+    presets = st.container(horizontal=True, gap="small")
+    with presets:
+        for name in _PRESETS:
+            st.button(name, key=f"preset_{name}", on_click=_apply_preset, args=(frame, name, features))
     values = {}
     left, right = st.columns(2, gap="medium")
     for index, feature in enumerate(features):

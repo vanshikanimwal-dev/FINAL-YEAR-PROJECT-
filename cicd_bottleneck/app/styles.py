@@ -13,9 +13,8 @@ html, body, [class*="css"] { font-family: Inter, sans-serif; }
 [data-testid="stSidebarNav"] { display: none; }
 #MainMenu, footer, [data-testid="stDecoration"] { visibility: hidden; height: 0; }
 .block-container { padding-top: 1.4rem; padding-bottom: 2.5rem; max-width: 1680px; }
-[data-testid="stSidebar"] { width: 320px; min-width: 320px; }
-[data-testid="stSidebar"] [data-testid="stCustomComponentV1"] { background: #0E152B; }
-[data-testid="stPlotlyChart"] { background: #121A33; border: 1px solid #1F2A4D; border-radius: 14px; padding: 6px 8px 10px; margin-bottom: 8px; }
+[data-testid="stPlotlyChart"] { background: #121A33; border: 1px solid #1F2A4D; border-radius: 14px; padding: 4px 8px 8px; margin-bottom: 8px; overflow: hidden; box-sizing: border-box; }
+[data-testid="stHtml"] { margin: 0; }
 .table-wrap { overflow-x: auto; margin-bottom: 16px; }
 div[data-testid="stExpander"] details { background: #121A33; border: 1px solid #1F2A4D; border-radius: 12px; }
 .block-container [data-testid="stRadio"] [role="radiogroup"] { gap: 8px; }
@@ -23,6 +22,11 @@ div[data-testid="stExpander"] details { background: #121A33; border: 1px solid #
 [data-testid="stSidebar"] label, [data-testid="stWidgetLabel"] p { color: #94A3B8; }
 .stButton > button, .stDownloadButton > button { background: #121A33; color: #E5E7EB; border: 1px solid #2DD4BF; border-radius: 10px; font-weight: 600; }
 .stButton > button:hover, .stDownloadButton > button:hover { border-color: #5EEAD4; color: #5EEAD4; }
+.st-key-nav [data-testid="stBaseButton-secondary"] { background: transparent; color: #94A3B8; border-color: transparent; font-weight: 500; justify-content: flex-start; }
+.st-key-nav [data-testid="stBaseButton-secondary"]:hover { background: #1F2A4D; color: #F8FAFC; border-color: transparent; }
+.st-key-nav [data-testid="stBaseButton-primary"] { background: #1F2A4D; color: #F8FAFC; border-color: #2DD4BF; font-weight: 600; justify-content: flex-start; }
+[data-testid="stTabs"] [data-baseweb="tab-list"] { gap: 8px; }
+[data-testid="stTabs"] button[data-baseweb="tab"] { border-radius: 999px; }
 h1, h2, h3, p, label, span { font-family: Inter, sans-serif; }
 .hero { background: linear-gradient(135deg, #121A33 0%, #10182E 55%, #0E1A2C 100%); border: 1px solid #1F2A4D; border-radius: 16px; padding: 28px 32px; margin-bottom: 24px; box-shadow: 0 0 40px rgba(45,212,191,0.08); }
 .kicker { color: #2DD4BF; letter-spacing: 0.14em; font-size: 12px; font-weight: 700; }
