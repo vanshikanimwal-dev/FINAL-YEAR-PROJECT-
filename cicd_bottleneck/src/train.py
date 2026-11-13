@@ -149,7 +149,7 @@ def oof_base_scores(
 
 
 class HybridStack(BaseEstimator, ClassifierMixin):
-    """Logistic blend of logistic regression, RBF SVM, gradient boosting, and random forest."""
+    """Logistic blend of already fitted base models. The blender only sees training scores."""
 
     def __init__(
         self,
@@ -192,9 +192,11 @@ def fit_hybrid(
     y_train: np.ndarray,
     seed: int,
     params: dict[str, dict[str, Any]],
+    members: list[str] | None = None,
 ) -> HybridStack:
     """Fit the blender on out-of-fold scores. ``bases`` stay fitted on the full training split."""
-    order = [name for name in PARAM_GRIDS if name in bases]
+    wanted = members or list(PARAM_GRIDS)
+    order = [name for name in wanted if name in bases]
     stacked = np.column_stack([oof_base_scores(name, params[name], x_train, y_train, seed) for name in order])
     scaler = StandardScaler()
     scaled_scores = scaler.fit_transform(stacked)
